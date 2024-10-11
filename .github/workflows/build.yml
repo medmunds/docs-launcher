@@ -36,6 +36,23 @@ jobs:
       pluginVerifierHomeDir: ${{ steps.properties.outputs.pluginVerifierHomeDir }}
     steps:
 
+      # Make some space
+      # (https://github.com/actions/runner-images/issues/10699)
+      - name: Find Large Installations
+        run: |
+          du -h -d 1 -t 250M /opt
+          du -h -d 1 -t 250M /opt/hostedtoolcache
+          du -h -d 2 -t 250M /usr/local
+          du -h -d 1 -t 250M /usr/share
+
+      - name: Clean Up Disk Space
+        run: |
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          df -h
+
       # Check out the current repository
       - name: Fetch Sources
         uses: actions/checkout@v4
@@ -73,7 +90,10 @@ jobs:
 
       # Build plugin
       - name: Build plugin
-        run: ./gradlew buildPlugin
+        run: |
+          df -h
+          ./gradlew buildPlugin
+          df -h
 
       # Prepare plugin archive content for creating artifact
       - name: Prepare Plugin Artifact
